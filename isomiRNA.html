@@ -1,0 +1,537 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>isomiRNA</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-06-07"><meta name="DC.source" content="isomiRNA.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#4">First: 5'-overhang in Sequence1</a></li><li><a href="#5">Second: 5'-end deletion</a></li><li><a href="#6">third: 5'-mutation</a></li><li><a href="#8">prepare alignment output (three columns)</a></li><li><a href="#10">First: 3'-overhang in Sequence1</a></li><li><a href="#11">compute length of 'Sequence1' and 'CanonicalSequence1'</a></li><li><a href="#12">3'-overhang on 'sequnce'</a></li><li><a href="#13">3'-overhang on canonical Sequence1</a></li><li><a href="#14">third: 3'-mutation</a></li><li><a href="#16">save the final_output as a textfile</a></li></ul></div><pre class="codeinput"><span class="comment">%import three variables from excel: Sequence1, CanonicalSequence1, 'Sequence1</span>
+<span class="comment">%number'</span>
+
+<span class="comment">%Sequence1=sequence;</span>
+<span class="comment">%CanonicalSequence1=Precursor1;</span>
+</pre><pre class="codeinput"><span class="comment">%%initialize output variables for the swalign() fucntion</span>
+Alignments = cell(length(CanonicalSequence1), 1);
+Starts = [];
+index_empty=[];  <span class="comment">%index of empty entries in 'Sequence1'---imported data</span>
+index_non_empty = [];
+
+
+<span class="keyword">for</span> i=1:length(CanonicalSequence1)
+    <span class="keyword">if</span> isempty(CanonicalSequence1{i})
+        index_empty=[index_empty;i];
+        Alignments{i} = <span class="string">''</span>;
+        Starts = [Starts; 0 0];
+        <span class="keyword">continue</span>;
+    <span class="keyword">end</span>
+    display(i);
+
+
+    <span class="comment">%%perform local aligment</span>
+    index_non_empty = [index_non_empty;i];
+    [~, Alignment, Start] = swalign(Sequence1{i}, CanonicalSequence1{i}, <span class="string">'Alphabet'</span>, <span class="string">'NT'</span>);
+    Alignments{i} = Alignment;
+    Starts = [Starts;Start'];
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Undefined function or variable 'CanonicalSequence1'.
+
+Error in isomiRNA (line 9)
+Alignments = cell(length(CanonicalSequence1), 1);   
+</pre><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">%%%%%%%%%%%  process 5'  end%%%%%%%%%</span>
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+</pre><h2>First: 5'-overhang in Sequence1<a name="4"></a></h2><pre class="codeinput">my_starts = Starts(index_non_empty,:);
+index_5 = my_starts(:, 1) &gt; ones(length(index_non_empty),1) &amp; my_starts(:, 2) == ones(length(index_non_empty),1);
+index_5 = index_non_empty(index_5); <span class="comment">%index in the original Sequence1 file</span>
+out_five_overhang = cell(length(Sequence1), 1);
+<span class="keyword">for</span> i=1:size(index_5, 1)
+
+    start_position = Starts(index_5(i),1);  <span class="comment">%temporaty</span>
+    seq = Sequence1{index_5(i)};                       <span class="comment">%temporary</span>
+    <span class="comment">%seq(1:start_position-1)</span>
+    out_five_overhang{index_5(i),1}=seq(1:start_position-1);
+
+<span class="keyword">end</span>
+</pre><h2>Second: 5'-end deletion<a name="5"></a></h2><pre class="codeinput">index_5_del = my_starts(:, 1) == ones(length(index_non_empty),1) &amp; my_starts(:, 2) &gt; ones(length(index_non_empty),1);
+index_5_del = index_non_empty(index_5_del); <span class="comment">%index in the original Sequence1 file</span>
+out_five_del = cell(length(Sequence1), 1);
+<span class="keyword">for</span> i=1:size(index_5_del, 1)
+
+    start_position = Starts(index_5_del(i),2);  <span class="comment">%temporaty</span>
+    seq = CanonicalSequence1{index_5_del(i)};                       <span class="comment">%temporary</span>
+    <span class="comment">%seq(1:start_position-1)</span>
+    out_five_del{index_5_del(i),1}=seq(1:start_position-1);
+
+<span class="keyword">end</span>
+</pre><h2>third: 5'-mutation<a name="6"></a></h2><pre class="codeinput">index_5_mut = my_starts(:, 1) &gt; ones(length(index_non_empty),1) &amp; my_starts(:, 2) &gt; ones(length(index_non_empty),1);
+index_5_mut = index_non_empty(index_5_mut); <span class="comment">%index in the original Sequence1 file</span>
+out_five_mut_seq = cell(length(Sequence1), 1);
+<span class="keyword">for</span> i=1:size(index_5_mut, 1)
+
+    start_position = Starts(index_5_mut(i),1);  <span class="comment">%temporaty</span>
+    seq = Sequence1{index_5_mut(i)};                       <span class="comment">%temporary</span>
+    <span class="comment">%seq(1:start_position-1)</span>
+    out_five_mut_seq{index_5_mut(i),1}=seq(1:start_position-1);
+
+<span class="keyword">end</span>
+out_five_mut_can = cell(length(Sequence1), 1);
+<span class="keyword">for</span> i=1:size(index_5_mut, 1)
+
+    start_position = Starts(index_5_mut(i),2);  <span class="comment">%temporaty</span>
+    seq = CanonicalSequence1{index_5_mut(i)};                       <span class="comment">%temporary</span>
+    <span class="comment">%seq(1:start_position-1)</span>
+    out_five_mut_can{index_5_mut(i),1}=seq(1:start_position-1);
+
+<span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">%%%%%% process middle %%%%%%%%%%%%%%%%</span>
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+non_empty_Aligments = Alignments(index_non_empty,:);
+<span class="comment">%reshape the non-empty alignments</span>
+my_Alignments = cell(size(non_empty_Aligments,1), 3);
+
+x=non_empty_Aligments(1);
+y=non_empty_Aligments{1};
+
+<span class="keyword">for</span> i=1:size(non_empty_Aligments,1)
+    current = non_empty_Aligments{i};
+    my_Alignments{i,1}= current(1,:);
+    my_Alignments{i,2}= current(2,:);
+    my_Alignments{i,3}= current(3,:);
+
+<span class="keyword">end</span>
+</pre><h2>prepare alignment output (three columns)<a name="8"></a></h2><pre class="codeinput">out_alignments = cell(length(Sequence1),3);
+<span class="keyword">for</span> i=1:length(index_non_empty)
+    out_alignments{index_non_empty(i),1}=my_Alignments{i,1};
+    out_alignments{index_non_empty(i),2}=my_Alignments{i,2};
+    out_alignments{index_non_empty(i),3}=my_Alignments{i,3};
+
+<span class="keyword">end</span>
+<span class="comment">%extract only the match symbols</span>
+
+match_symbols = my_Alignments(:,2);
+idx_space = cellfun(@(x) sum(isspace(x)), match_symbols);
+index_space=index_non_empty(logical(idx_space));
+out_with_space = cell(length(Sequence1), 1);
+<span class="keyword">for</span> i=1:length(index_space)
+    out_with_space{index_space(i),1}=<span class="string">'yes'</span>;
+<span class="keyword">end</span>
+
+<span class="comment">%</span>
+idx_star = cellfun(@(x) sum(x==<span class="string">'.'</span>), match_symbols);
+idx_star = index_non_empty(logical(idx_star));
+out_with_star = cell(length(Sequence1), 1);
+<span class="keyword">for</span> i=1:length(idx_star)
+    out_with_star{idx_star(i),1}=<span class="string">'yes'</span>;
+<span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">%%%%%% process 3' end %%%%%%%%%%%%%%%%</span>
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+</pre><h2>First: 3'-overhang in Sequence1<a name="10"></a></h2><pre class="codeinput"><span class="comment">%my_starts = Starts(index_non_empty,:);  %alread computed</span>
+<span class="comment">%my_Alignments = cell(size(non_empty_Aligments,1), 3);   %already computed</span>
+<span class="comment">%get length of alignments between 'Sequence1' and "CanonicalSequence1'</span>
+all_alignment_Sequence11=my_Alignments(:,1);
+all_alignment_Sequence12=my_Alignments(:,3);
+aligment_lengths1 = [];
+aligment_lengths2 = [];
+
+<span class="keyword">for</span> i = 1:size(all_alignment_Sequence11, 1)
+    temp_seq = all_alignment_Sequence11{i};
+
+    aligment_lengths1=[aligment_lengths1;length(temp_seq)];
+<span class="keyword">end</span>
+
+
+<span class="keyword">for</span> i = 1:size(all_alignment_Sequence12, 1)
+    temp_seq = all_alignment_Sequence12{i};
+
+    aligment_lengths2=[aligment_lengths2;length(temp_seq)];
+<span class="keyword">end</span>
+<span class="comment">%sum(aligment_lengths1~=aligment_lengths2)</span>
+aligment_lengths=aligment_lengths1;
+</pre><h2>compute length of 'Sequence1' and 'CanonicalSequence1'<a name="11"></a></h2><pre class="codeinput">non_empty_Sequence1 = Sequence1(index_non_empty);
+non_empty_can = CanonicalSequence1(index_non_empty);
+length_non_empty_Sequence1=[];
+length_non_empty_can=[];
+<span class="keyword">for</span> i=1:size(non_empty_Sequence1,1)
+    length_non_empty_Sequence1=[length_non_empty_Sequence1;length(non_empty_Sequence1{i})];
+<span class="keyword">end</span>
+<span class="keyword">for</span> i=1:size(non_empty_can,1)
+    length_non_empty_can=[length_non_empty_can;length(non_empty_can{i})];
+<span class="keyword">end</span>
+</pre><h2>3'-overhang on 'sequnce'<a name="12"></a></h2><pre class="codeinput">index_Sequence1_3_over = my_starts(:, 1) + aligment_lengths -1 &lt; length_non_empty_Sequence1 &amp; my_starts(:, 2) + aligment_lengths -1 == length_non_empty_can;
+index_Sequence1_3_over = index_non_empty(index_Sequence1_3_over); <span class="comment">%index in the original Sequence1 file</span>
+out_Sequence1_three_overhang = cell(length(Sequence1), 1);
+<span class="keyword">for</span> i=1:size(index_Sequence1_3_over, 1)
+
+    start_position = Starts(index_Sequence1_3_over(i),1) + size(Alignments{index_Sequence1_3_over(i),:},2);  <span class="comment">%temporaty</span>
+    seq = Sequence1{index_Sequence1_3_over(i)};                       <span class="comment">%temporary</span>
+    <span class="comment">%seq(1:start_position-1)</span>
+    out_Sequence1_three_overhang{index_Sequence1_3_over(i),1}=seq(start_position:end);
+
+
+<span class="keyword">end</span>
+</pre><h2>3'-overhang on canonical Sequence1<a name="13"></a></h2><pre class="codeinput">index_can_3_over = my_starts(:, 2) + aligment_lengths -1 &lt; length_non_empty_can  &amp; my_starts(:, 1) + aligment_lengths -1 == length_non_empty_Sequence1;
+index_can_3_over = index_non_empty(index_can_3_over); <span class="comment">%index in the original Sequence1 file</span>
+out_can_three_overhang = cell(length(Sequence1), 1);
+
+<span class="keyword">for</span> i=1:size(index_can_3_over, 1)
+
+    start_position = Starts(index_can_3_over(i),1) + size(Alignments{index_can_3_over(i),:},2);  <span class="comment">%temporaty</span>
+    seq = CanonicalSequence1{index_can_3_over(i)};                       <span class="comment">%temporary</span>
+    <span class="comment">%seq(1:start_position-1)</span>
+    out_can_three_overhang{index_can_3_over(i),1}=seq(start_position:end);
+
+
+<span class="keyword">end</span>
+</pre><h2>third: 3'-mutation<a name="14"></a></h2><pre class="codeinput">index_3_mut = my_starts(:, 1) + aligment_lengths -1 &lt; length_non_empty_Sequence1 &amp; my_starts(:, 2) + aligment_lengths -1 &lt; length_non_empty_can;
+index_3_mut = index_non_empty(index_3_mut); <span class="comment">%index in the original Sequence1 file</span>
+out_three_mut_seq = cell(length(Sequence1), 1);
+<span class="keyword">for</span> i=1:size(index_3_mut, 1)
+
+
+
+    start_position = Starts(index_3_mut(i),1) + size(Alignments{index_3_mut(i),:},2);  <span class="comment">%temporaty</span>
+    seq = Sequence1{index_3_mut(i)};                       <span class="comment">%temporary</span>
+    <span class="comment">%seq(1:start_position-1)</span>
+    out_three_mut_seq{index_3_mut(i),1}=seq(start_position:end);
+
+<span class="keyword">end</span>
+out_three_mut_can = cell(length(Sequence1), 1);
+<span class="keyword">for</span> i=1:size(index_3_mut, 1)
+
+
+
+    start_position = Starts(index_3_mut(i),2) + size(Alignments{index_3_mut(i),:},2);  <span class="comment">%temporaty</span>
+    seq = CanonicalSequence1{index_3_mut(i)};                       <span class="comment">%temporary</span>
+    <span class="comment">%seq(1:start_position-1)</span>
+    out_three_mut_can{index_3_mut(i),1}=seq(start_position:end);
+
+<span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="comment">%combine all the output</span>
+ final_output = [out_alignments, out_five_overhang, out_five_del, out_five_mut_seq, out_five_mut_can, out_Sequence1_three_overhang,out_can_three_overhang, out_three_mut_seq, out_three_mut_can, out_with_space];
+</pre><h2>save the final_output as a textfile<a name="16"></a></h2><pre class="codeinput">T = cell2table(final_output,<span class="string">'VariableNames'</span>,{<span class="string">'out_alignments1'</span>, <span class="string">'out_alignments2'</span>, <span class="string">'out_alignments3'</span>,<span class="string">'out_five_overhang'</span>, <span class="string">'out_five_del'</span>, <span class="string">'out_five_mut_seq'</span>, <span class="string">'out_five_mut_can'</span>, <span class="string">'out_Sequence1_three_overhang'</span>,<span class="string">'out_can_three_overhang'</span>, <span class="string">'out_three_mut_seq'</span>, <span class="string">'out_three_mut_can'</span>,<span class="string">'out_with_space'</span>});
+
+writetable(T,<span class="string">'B2Precursor1_new.dat'</span>)
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%import three variables from excel: Sequence1, CanonicalSequence1, 'Sequence1
+%number'
+
+%Sequence1=sequence;
+%CanonicalSequence1=Precursor1;
+
+%%
+%%initialize output variables for the swalign() fucntion
+Alignments = cell(length(CanonicalSequence1), 1);   
+Starts = [];
+index_empty=[];  %index of empty entries in 'Sequence1'REPLACE_WITH_DASH_DASH-imported data
+index_non_empty = [];
+
+
+for i=1:length(CanonicalSequence1)
+    if isempty(CanonicalSequence1{i})
+        index_empty=[index_empty;i];
+        Alignments{i} = '';
+        Starts = [Starts; 0 0];
+        continue;
+    end
+    display(i);
+    
+    
+    %%perform local aligment
+    index_non_empty = [index_non_empty;i];
+    [~, Alignment, Start] = swalign(Sequence1{i}, CanonicalSequence1{i}, 'Alphabet', 'NT');
+    Alignments{i} = Alignment;
+    Starts = [Starts;Start'];      
+end
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%  process 5'  end%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% First: 5'-overhang in Sequence1
+my_starts = Starts(index_non_empty,:);
+index_5 = my_starts(:, 1) > ones(length(index_non_empty),1) & my_starts(:, 2) == ones(length(index_non_empty),1);
+index_5 = index_non_empty(index_5); %index in the original Sequence1 file
+out_five_overhang = cell(length(Sequence1), 1);
+for i=1:size(index_5, 1)
+    
+    start_position = Starts(index_5(i),1);  %temporaty
+    seq = Sequence1{index_5(i)};                       %temporary
+    %seq(1:start_position-1)
+    out_five_overhang{index_5(i),1}=seq(1:start_position-1);
+  
+end
+
+%% Second: 5'-end deletion
+index_5_del = my_starts(:, 1) == ones(length(index_non_empty),1) & my_starts(:, 2) > ones(length(index_non_empty),1);
+index_5_del = index_non_empty(index_5_del); %index in the original Sequence1 file
+out_five_del = cell(length(Sequence1), 1);
+for i=1:size(index_5_del, 1)
+    
+    start_position = Starts(index_5_del(i),2);  %temporaty
+    seq = CanonicalSequence1{index_5_del(i)};                       %temporary
+    %seq(1:start_position-1)
+    out_five_del{index_5_del(i),1}=seq(1:start_position-1);
+  
+end
+
+%% third: 5'-mutation
+index_5_mut = my_starts(:, 1) > ones(length(index_non_empty),1) & my_starts(:, 2) > ones(length(index_non_empty),1);
+index_5_mut = index_non_empty(index_5_mut); %index in the original Sequence1 file
+out_five_mut_seq = cell(length(Sequence1), 1);
+for i=1:size(index_5_mut, 1)
+    
+    start_position = Starts(index_5_mut(i),1);  %temporaty
+    seq = Sequence1{index_5_mut(i)};                       %temporary
+    %seq(1:start_position-1)
+    out_five_mut_seq{index_5_mut(i),1}=seq(1:start_position-1);
+  
+end
+out_five_mut_can = cell(length(Sequence1), 1);
+for i=1:size(index_5_mut, 1)
+    
+    start_position = Starts(index_5_mut(i),2);  %temporaty
+    seq = CanonicalSequence1{index_5_mut(i)};                       %temporary
+    %seq(1:start_position-1)
+    out_five_mut_can{index_5_mut(i),1}=seq(1:start_position-1);
+  
+end
+
+
+
+
+
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%% process middle %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+non_empty_Aligments = Alignments(index_non_empty,:);
+%reshape the non-empty alignments
+my_Alignments = cell(size(non_empty_Aligments,1), 3);
+
+x=non_empty_Aligments(1);
+y=non_empty_Aligments{1};
+
+for i=1:size(non_empty_Aligments,1)
+    current = non_empty_Aligments{i};
+    my_Alignments{i,1}= current(1,:);
+    my_Alignments{i,2}= current(2,:);
+    my_Alignments{i,3}= current(3,:);
+    
+end
+%% prepare alignment output (three columns)
+out_alignments = cell(length(Sequence1),3);
+for i=1:length(index_non_empty)
+    out_alignments{index_non_empty(i),1}=my_Alignments{i,1};
+    out_alignments{index_non_empty(i),2}=my_Alignments{i,2};
+    out_alignments{index_non_empty(i),3}=my_Alignments{i,3};
+    
+end
+%extract only the match symbols
+ 
+match_symbols = my_Alignments(:,2);
+idx_space = cellfun(@(x) sum(isspace(x)), match_symbols);
+index_space=index_non_empty(logical(idx_space));
+out_with_space = cell(length(Sequence1), 1);
+for i=1:length(index_space)
+    out_with_space{index_space(i),1}='yes';
+end
+
+%
+idx_star = cellfun(@(x) sum(x=='.'), match_symbols);
+idx_star = index_non_empty(logical(idx_star));
+out_with_star = cell(length(Sequence1), 1);
+for i=1:length(idx_star)
+    out_with_star{idx_star(i),1}='yes';
+end
+
+
+
+
+
+
+%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%% process 3' end %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% First: 3'-overhang in Sequence1
+%my_starts = Starts(index_non_empty,:);  %alread computed
+%my_Alignments = cell(size(non_empty_Aligments,1), 3);   %already computed
+%get length of alignments between 'Sequence1' and "CanonicalSequence1'
+all_alignment_Sequence11=my_Alignments(:,1);
+all_alignment_Sequence12=my_Alignments(:,3);
+aligment_lengths1 = [];
+aligment_lengths2 = [];
+
+for i = 1:size(all_alignment_Sequence11, 1)
+    temp_seq = all_alignment_Sequence11{i};
+      
+    aligment_lengths1=[aligment_lengths1;length(temp_seq)];
+end
+
+
+for i = 1:size(all_alignment_Sequence12, 1)
+    temp_seq = all_alignment_Sequence12{i};
+      
+    aligment_lengths2=[aligment_lengths2;length(temp_seq)];
+end
+%sum(aligment_lengths1~=aligment_lengths2)
+aligment_lengths=aligment_lengths1;
+
+
+%% compute length of 'Sequence1' and 'CanonicalSequence1'
+non_empty_Sequence1 = Sequence1(index_non_empty);
+non_empty_can = CanonicalSequence1(index_non_empty);
+length_non_empty_Sequence1=[];
+length_non_empty_can=[];
+for i=1:size(non_empty_Sequence1,1)
+    length_non_empty_Sequence1=[length_non_empty_Sequence1;length(non_empty_Sequence1{i})];
+end
+for i=1:size(non_empty_can,1)
+    length_non_empty_can=[length_non_empty_can;length(non_empty_can{i})];
+end
+
+%% 3'-overhang on 'sequnce'
+index_Sequence1_3_over = my_starts(:, 1) + aligment_lengths -1 < length_non_empty_Sequence1 & my_starts(:, 2) + aligment_lengths -1 == length_non_empty_can;
+index_Sequence1_3_over = index_non_empty(index_Sequence1_3_over); %index in the original Sequence1 file
+out_Sequence1_three_overhang = cell(length(Sequence1), 1);
+for i=1:size(index_Sequence1_3_over, 1)
+    
+    start_position = Starts(index_Sequence1_3_over(i),1) + size(Alignments{index_Sequence1_3_over(i),:},2);  %temporaty
+    seq = Sequence1{index_Sequence1_3_over(i)};                       %temporary
+    %seq(1:start_position-1)
+    out_Sequence1_three_overhang{index_Sequence1_3_over(i),1}=seq(start_position:end);
+    
+  
+end
+
+
+%% 3'-overhang on canonical Sequence1
+index_can_3_over = my_starts(:, 2) + aligment_lengths -1 < length_non_empty_can  & my_starts(:, 1) + aligment_lengths -1 == length_non_empty_Sequence1;
+index_can_3_over = index_non_empty(index_can_3_over); %index in the original Sequence1 file
+out_can_three_overhang = cell(length(Sequence1), 1);
+
+for i=1:size(index_can_3_over, 1)
+    
+    start_position = Starts(index_can_3_over(i),1) + size(Alignments{index_can_3_over(i),:},2);  %temporaty
+    seq = CanonicalSequence1{index_can_3_over(i)};                       %temporary
+    %seq(1:start_position-1)
+    out_can_three_overhang{index_can_3_over(i),1}=seq(start_position:end);
+    
+  
+end
+
+%% third: 3'-mutation
+index_3_mut = my_starts(:, 1) + aligment_lengths -1 < length_non_empty_Sequence1 & my_starts(:, 2) + aligment_lengths -1 < length_non_empty_can;
+index_3_mut = index_non_empty(index_3_mut); %index in the original Sequence1 file
+out_three_mut_seq = cell(length(Sequence1), 1);
+for i=1:size(index_3_mut, 1)
+    
+    
+    
+    start_position = Starts(index_3_mut(i),1) + size(Alignments{index_3_mut(i),:},2);  %temporaty
+    seq = Sequence1{index_3_mut(i)};                       %temporary
+    %seq(1:start_position-1)
+    out_three_mut_seq{index_3_mut(i),1}=seq(start_position:end);
+  
+end
+out_three_mut_can = cell(length(Sequence1), 1);
+for i=1:size(index_3_mut, 1)
+    
+    
+    
+    start_position = Starts(index_3_mut(i),2) + size(Alignments{index_3_mut(i),:},2);  %temporaty
+    seq = CanonicalSequence1{index_3_mut(i)};                       %temporary
+    %seq(1:start_position-1)
+    out_three_mut_can{index_3_mut(i),1}=seq(start_position:end);
+  
+end
+
+
+%%
+%combine all the output
+ final_output = [out_alignments, out_five_overhang, out_five_del, out_five_mut_seq, out_five_mut_can, out_Sequence1_three_overhang,out_can_three_overhang, out_three_mut_seq, out_three_mut_can, out_with_space];
+
+ 
+ 
+%% save the final_output as a textfile
+T = cell2table(final_output,'VariableNames',{'out_alignments1', 'out_alignments2', 'out_alignments3','out_five_overhang', 'out_five_del', 'out_five_mut_seq', 'out_five_mut_can', 'out_Sequence1_three_overhang','out_can_three_overhang', 'out_three_mut_seq', 'out_three_mut_can','out_with_space'});
+
+writetable(T,'B2Precursor1_new.dat')
+
+%%
+
+
+
+
+
+
+
+
+
+
+##### SOURCE END #####
+--></body></html>
