@@ -6,3 +6,7 @@ Two columns are imported from the input manually, which are named Sequece1 and C
 
 The HTML file can be read as:
 http://htmlpreview.github.io/?https://github.com/shengbing/IsoMIR-local-alignment-and-classification/blob/master/isomiRNA.html
+
+
+A modifed script file is:
+http://htmlpreview.github.io/?https://github.com/shengbing/IsoMIR-local-alignment-and-classification/blob/master/isomiRNA_modified.html
