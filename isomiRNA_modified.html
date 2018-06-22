@@ -66,11 +66,29 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#4">First: 5'-overhang in Sequence1</a></li><li><a href="#5">Second: 5'-end deletion</a></li><li><a href="#6">third: 5'-mutation</a></li><li><a href="#8">prepare alignment output (three columns)</a></li><li><a href="#11">remove 5' overhang from 'Sequence1' and 'CanonicalSequence1'</a></li><li><a href="#14">3'-overhang on 'sequnce'</a></li><li><a href="#16">3'-overhang on canonical Sequence1</a></li><li><a href="#18">3'-mutation</a></li><li><a href="#20">polymorphic changes in the middle</a></li><li><a href="#22">save the final_output as a textfile</a></li></ul></div><pre class="codeinput"><span class="comment">%import three variables from excel: Sequence1, CanonicalSequence1, 'Sequence1</span>
-<span class="comment">%number'</span>
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#5">First: 5'-overhang in Sequence1</a></li><li><a href="#6">Second: 5'-end deletion</a></li><li><a href="#7">third: 5'-mutation</a></li><li><a href="#9">prepare alignment output (three columns)</a></li><li><a href="#12">remove 5' overhang from 'Sequence1' and 'CanonicalSequence1'</a></li><li><a href="#15">3'-overhang on 'sequnce'</a></li><li><a href="#17">3'-overhang on canonical Sequence1</a></li><li><a href="#19">3'-mutation</a></li><li><a href="#21">polymorphic changes in the middle</a></li><li><a href="#23">save the final_output as a textfile</a></li></ul></div><pre class="codeinput"><span class="comment">%import two variables from excel: Sequence1, CanonicalSequence1</span>
+<span class="comment">%Sequence1 is the miRNA sequence; CanonicalSequence1 is its canonical</span>
+<span class="comment">%sequence</span>
 
-<span class="comment">%Sequence1=sequence;</span>
-<span class="comment">%CanonicalSequence1=Precursor1;</span>
+
+
+
+<span class="comment">%import the precursor sequences. Each precursor sequence is a variable,</span>
+<span class="comment">%call them Prec1, Prec2, Prec3, et. al. Modify the line below if necessary</span>
+
+
+
+<span class="comment">%%first determine if Sequence1 is a template form</span>
+</pre><pre class="codeinput">isTemplate=cell(length(CanonicalSequence1), 1);
+<span class="keyword">for</span> i=1:length(CanonicalSequence1)
+    <span class="keyword">if</span> strfind(Sequence1{i},Prec1{i}) | strfind(Sequence1{i},Prec2{i}) | strfind(Sequence1{i},Prec3{i}) <span class="comment">%add more if there are more precursor sequences</span>
+        isTemplate{i}=<span class="string">'yes'</span>;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Undefined function or variable 'CanonicalSequence1'.
+
+Error in isomiRNA_modified (line 15)
+isTemplate=cell(length(CanonicalSequence1), 1);
 </pre><pre class="codeinput"><span class="comment">%%initialize output variables for the swalign() fucntion</span>
 Alignments = cell(length(CanonicalSequence1), 1);
 Starts = [];
@@ -94,14 +112,10 @@ index_non_empty = [];
     Alignments{i} = Alignment;
     Starts = [Starts;Start'];
 <span class="keyword">end</span>
-</pre><pre class="codeoutput error">Undefined function or variable 'CanonicalSequence1'.
-
-Error in isomiRNA_modified (line 9)
-Alignments = cell(length(CanonicalSequence1), 1);   
 </pre><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
 <span class="comment">%%%%%%%%%%%  process 5'  end%%%%%%%%%</span>
 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
-</pre><h2>First: 5'-overhang in Sequence1<a name="4"></a></h2><pre class="codeinput">my_starts = Starts(index_non_empty,:);
+</pre><h2>First: 5'-overhang in Sequence1<a name="5"></a></h2><pre class="codeinput">my_starts = Starts(index_non_empty,:);
 index_5 = my_starts(:, 1) &gt; ones(length(index_non_empty),1) &amp; my_starts(:, 2) == ones(length(index_non_empty),1);
 index_5 = index_non_empty(index_5); <span class="comment">%index in the original Sequence1 file</span>
 out_five_overhang = cell(length(Sequence1), 1);
@@ -113,7 +127,7 @@ out_five_overhang = cell(length(Sequence1), 1);
     out_five_overhang{index_5(i),1}=seq(1:start_position-1);
 
 <span class="keyword">end</span>
-</pre><h2>Second: 5'-end deletion<a name="5"></a></h2><pre class="codeinput">index_5_del = my_starts(:, 1) == ones(length(index_non_empty),1) &amp; my_starts(:, 2) &gt; ones(length(index_non_empty),1);
+</pre><h2>Second: 5'-end deletion<a name="6"></a></h2><pre class="codeinput">index_5_del = my_starts(:, 1) == ones(length(index_non_empty),1) &amp; my_starts(:, 2) &gt; ones(length(index_non_empty),1);
 index_5_del = index_non_empty(index_5_del); <span class="comment">%index in the original Sequence1 file</span>
 out_five_del = cell(length(Sequence1), 1);
 <span class="keyword">for</span> i=1:size(index_5_del, 1)
@@ -124,7 +138,7 @@ out_five_del = cell(length(Sequence1), 1);
     out_five_del{index_5_del(i),1}=seq(1:start_position-1);
 
 <span class="keyword">end</span>
-</pre><h2>third: 5'-mutation<a name="6"></a></h2><pre class="codeinput">index_5_mut = my_starts(:, 1) &gt; ones(length(index_non_empty),1) &amp; my_starts(:, 2) &gt; ones(length(index_non_empty),1);
+</pre><h2>third: 5'-mutation<a name="7"></a></h2><pre class="codeinput">index_5_mut = my_starts(:, 1) &gt; ones(length(index_non_empty),1) &amp; my_starts(:, 2) &gt; ones(length(index_non_empty),1);
 index_5_mut = index_non_empty(index_5_mut); <span class="comment">%index in the original Sequence1 file</span>
 out_five_mut_seq = cell(length(Sequence1), 1);
 <span class="keyword">for</span> i=1:size(index_5_mut, 1)
@@ -161,7 +175,7 @@ y=non_empty_Aligments{1};
     my_Alignments{i,3}= current(3,:);
 
 <span class="keyword">end</span>
-</pre><h2>prepare alignment output (three columns)<a name="8"></a></h2><pre class="codeinput">out_alignments = cell(length(Sequence1),3);
+</pre><h2>prepare alignment output (three columns)<a name="9"></a></h2><pre class="codeinput">out_alignments = cell(length(Sequence1),3);
 <span class="keyword">for</span> i=1:length(index_non_empty)
     out_alignments{index_non_empty(i),1}=my_Alignments{i,1};
     out_alignments{index_non_empty(i),2}=my_Alignments{i,2};
@@ -188,7 +202,7 @@ out_with_star = cell(length(Sequence1), 1);
 </pre><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
 <span class="comment">%%%%%% process 3' end %%%%%%%%%%%%%%%%</span>
 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
-</pre><h2>remove 5' overhang from 'Sequence1' and 'CanonicalSequence1'<a name="11"></a></h2><pre class="codeinput">Sequence1_wo_overhang = Sequence1;
+</pre><h2>remove 5' overhang from 'Sequence1' and 'CanonicalSequence1'<a name="12"></a></h2><pre class="codeinput">Sequence1_wo_overhang = Sequence1;
 can_wo_overhang = CanonicalSequence1;
 
 <span class="keyword">for</span> i=1:length(index_non_empty)
@@ -217,7 +231,7 @@ all_alignment_Sequence13=my_Alignments(:,3);
 
     all_alignment_Sequence13{i}=temp_seq(isstrprop(temp_seq, <span class="string">'alpha'</span>));
 <span class="keyword">end</span>
-</pre><h2>3'-overhang on 'sequnce'<a name="14"></a></h2><pre class="codeinput">out_Sequence1_three_overhang = cell(length(Sequence1), 1);
+</pre><h2>3'-overhang on 'sequnce'<a name="15"></a></h2><pre class="codeinput">out_Sequence1_three_overhang = cell(length(Sequence1), 1);
 <span class="keyword">for</span> i=1:length(index_non_empty)
 
     <span class="keyword">if</span> length(Sequence1_wo_overhang{index_non_empty(i)}) &gt; length(all_alignment_Sequence11{i}) &amp;&amp; length(all_alignment_Sequence11{i}) ==length(can_wo_overhang{index_non_empty(i)})
@@ -225,7 +239,7 @@ all_alignment_Sequence13=my_Alignments(:,3);
     <span class="keyword">end</span>
 
 <span class="keyword">end</span>
-</pre><h2>3'-overhang on canonical Sequence1<a name="16"></a></h2><pre class="codeinput">out_can_three_overhang = cell(length(Sequence1), 1);
+</pre><h2>3'-overhang on canonical Sequence1<a name="17"></a></h2><pre class="codeinput">out_can_three_overhang = cell(length(Sequence1), 1);
 
 <span class="keyword">for</span> i=1:length(index_non_empty)
 
@@ -235,7 +249,7 @@ all_alignment_Sequence13=my_Alignments(:,3);
 
 
 <span class="keyword">end</span>
-</pre><h2>3'-mutation<a name="18"></a></h2><pre class="codeinput">out_three_mut_seq = cell(length(Sequence1), 1);
+</pre><h2>3'-mutation<a name="19"></a></h2><pre class="codeinput">out_three_mut_seq = cell(length(Sequence1), 1);
 out_three_mut_can = cell(length(Sequence1), 1);
 <span class="keyword">for</span> i=1:length(index_non_empty)
     <span class="keyword">if</span> length(Sequence1_wo_overhang{index_non_empty(i)}) &gt; length(all_alignment_Sequence11{i}) &amp;&amp; length(all_alignment_Sequence13{i}) &lt; length(can_wo_overhang{index_non_empty(i)})
@@ -247,7 +261,7 @@ out_three_mut_can = cell(length(Sequence1), 1);
 
 
 <span class="keyword">end</span>
-</pre><h2>polymorphic changes in the middle<a name="20"></a></h2><pre class="codeinput">to_base=cell(length(Sequence1), 1);
+</pre><h2>polymorphic changes in the middle<a name="21"></a></h2><pre class="codeinput">to_base=cell(length(Sequence1), 1);
 from_base=cell(length(Sequence1), 1);
 to_position=cell(length(Sequence1), 1);
 from_position=cell(length(Sequence1), 1);
@@ -274,17 +288,33 @@ from_position=cell(length(Sequence1), 1);
 
 <span class="keyword">end</span>
 </pre><pre class="codeinput"><span class="comment">%combine all the output</span>
- final_output = [Sequence1, CanonicalSequence1, out_alignments, out_five_overhang, out_five_del, out_five_mut_seq, out_five_mut_can, out_Sequence1_three_overhang,out_can_three_overhang, out_three_mut_seq, out_three_mut_can, out_with_space, out_with_star, from_position, to_position, from_base, to_base];
-</pre><h2>save the final_output as a textfile<a name="22"></a></h2><pre class="codeinput">T = cell2table(final_output,<span class="string">'VariableNames'</span>,{<span class="string">'sequence'</span>, <span class="string">'canonicalSequence'</span>,<span class="string">'out_alignments1'</span>, <span class="string">'out_alignments2'</span>, <span class="string">'out_alignments3'</span>,<span class="string">'five_add'</span>, <span class="string">'five_del'</span>, <span class="string">'five_variations_to'</span>, <span class="string">'five_variations_from'</span>, <span class="string">'three_add'</span>,<span class="string">'three_del'</span>, <span class="string">'three_variations_to'</span>, <span class="string">'three_variations_from'</span>,<span class="string">'out_with_space'</span>, <span class="string">'out_with_star'</span>, <span class="string">'from_position'</span>, <span class="string">'to_position'</span>, <span class="string">'from_base'</span>, <span class="string">'to_base'</span>});
+ final_output = [Sequence1, CanonicalSequence1, out_alignments,isTemplate, out_five_overhang, out_five_del, out_five_mut_seq, out_five_mut_can, out_Sequence1_three_overhang,out_can_three_overhang, out_three_mut_seq, out_three_mut_can, out_with_space, out_with_star, from_position, to_position, from_base, to_base];
+</pre><h2>save the final_output as a textfile<a name="23"></a></h2><pre class="codeinput">T = cell2table(final_output,<span class="string">'VariableNames'</span>,{<span class="string">'sequence'</span>, <span class="string">'canonicalSequence'</span>,<span class="string">'out_alignments1'</span>, <span class="string">'out_alignments2'</span>, <span class="string">'out_alignments3'</span>, <span class="string">'isTemplate'</span>, <span class="string">'five_add'</span>, <span class="string">'five_del'</span>, <span class="string">'five_variations_to'</span>, <span class="string">'five_variations_from'</span>, <span class="string">'three_add'</span>,<span class="string">'three_del'</span>, <span class="string">'three_variations_to'</span>, <span class="string">'three_variations_from'</span>,<span class="string">'out_with_space'</span>, <span class="string">'out_with_star'</span>, <span class="string">'from_position'</span>, <span class="string">'to_position'</span>, <span class="string">'from_base'</span>, <span class="string">'to_base'</span>});
 
 writetable(T,<span class="string">'output.xlsx'</span>)
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%import three variables from excel: Sequence1, CanonicalSequence1, 'Sequence1
-%number'
+%import two variables from excel: Sequence1, CanonicalSequence1
+%Sequence1 is the miRNA sequence; CanonicalSequence1 is its canonical
+%sequence
 
-%Sequence1=sequence;
-%CanonicalSequence1=Precursor1;
+
+
+
+%import the precursor sequences. Each precursor sequence is a variable,
+%call them Prec1, Prec2, Prec3, et. al. Modify the line below if necessary
+
+
+
+%%first determine if Sequence1 is a template form
+%%
+isTemplate=cell(length(CanonicalSequence1), 1);
+for i=1:length(CanonicalSequence1)
+    if strfind(Sequence1{i},Prec1{i}) | strfind(Sequence1{i},Prec2{i}) | strfind(Sequence1{i},Prec3{i}) %add more if there are more precursor sequences
+        isTemplate{i}='yes';
+    end
+end
+
 
 %%
 %%initialize output variables for the swalign() fucntion
@@ -542,12 +572,12 @@ end
 
 %%
 %combine all the output
- final_output = [Sequence1, CanonicalSequence1, out_alignments, out_five_overhang, out_five_del, out_five_mut_seq, out_five_mut_can, out_Sequence1_three_overhang,out_can_three_overhang, out_three_mut_seq, out_three_mut_can, out_with_space, out_with_star, from_position, to_position, from_base, to_base];
+ final_output = [Sequence1, CanonicalSequence1, out_alignments,isTemplate, out_five_overhang, out_five_del, out_five_mut_seq, out_five_mut_can, out_Sequence1_three_overhang,out_can_three_overhang, out_three_mut_seq, out_three_mut_can, out_with_space, out_with_star, from_position, to_position, from_base, to_base];
 
  
  
 %% save the final_output as a textfile
-T = cell2table(final_output,'VariableNames',{'sequence', 'canonicalSequence','out_alignments1', 'out_alignments2', 'out_alignments3','five_add', 'five_del', 'five_variations_to', 'five_variations_from', 'three_add','three_del', 'three_variations_to', 'three_variations_from','out_with_space', 'out_with_star', 'from_position', 'to_position', 'from_base', 'to_base'});
+T = cell2table(final_output,'VariableNames',{'sequence', 'canonicalSequence','out_alignments1', 'out_alignments2', 'out_alignments3', 'isTemplate', 'five_add', 'five_del', 'five_variations_to', 'five_variations_from', 'three_add','three_del', 'three_variations_to', 'three_variations_from','out_with_space', 'out_with_star', 'from_position', 'to_position', 'from_base', 'to_base'});
 
 writetable(T,'output.xlsx')
 
